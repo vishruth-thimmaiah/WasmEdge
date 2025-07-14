@@ -233,7 +233,7 @@ struct WasiNNEnvironment :
   bool mdGet(std::string Name, uint32_t &GraphId) noexcept {
     std::shared_lock Lock(MdMutex);
     if (auto It = MdMap.find(Name); It != MdMap.end()) {
-      GraphId = static_cast<uint32_t>(It->second);
+      GraphId = getLittleEndian(static_cast<uint32_t>(It->second));
       return true;
     }
     return false;

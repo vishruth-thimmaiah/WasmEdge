@@ -85,7 +85,7 @@ void writeBinaries(WasmEdge::Runtime::Instance::MemoryInstance &MemInst,
 void writeUInt32(WasmEdge::Runtime::Instance::MemoryInstance &MemInst,
                  uint32_t Value, uint32_t &Ptr) {
   uint32_t *BufPtr = MemInst.getPointer<uint32_t *>(Ptr);
-  *BufPtr = Value;
+  *BufPtr = WasmEdge::getLittleEndian(Value);
   Ptr += 4;
 }
 
@@ -1318,8 +1318,13 @@ TEST(WasiNNTest, GGMLBackend) {
   // Load the files.
   std::string Prompt = "Once upon a time, ";
   std::vector<uint8_t> TensorData(Prompt.begin(), Prompt.end());
+#if WASMEDGE_ENDIAN_LITTLE_BYTE
   std::vector<uint8_t> WeightRead =
       readEntireFile("./wasinn_ggml_fixtures/orca_mini.gguf");
+#else
+  std::vector<uint8_t> WeightRead =
+      readEntireFile("./wasinn_ggml_fixtures/granite-3.gguf");
+#endif
 
   std::vector<uint32_t> TensorDim{1};
   uint32_t BuilderPtr = UINT32_C(0);

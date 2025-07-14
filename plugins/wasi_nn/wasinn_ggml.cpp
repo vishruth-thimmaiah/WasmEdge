@@ -2771,7 +2771,7 @@ Expect<ErrNo> load(WasiNNEnvironment &Env, Span<const Span<uint8_t>> Builders,
   }
 
   // Store the loaded graph.
-  GraphId = GId;
+  GraphId = getLittleEndian(GId);
   Env.NNGraph[GId].setReady();
 
   LOG_DEBUG(GraphRef.EnableDebugLog, "load...Done"sv)
@@ -2799,6 +2799,7 @@ Expect<ErrNo> initExecCtx(WasiNNEnvironment &Env, uint32_t GraphId,
       common_sampler_init(GraphRef.LlamaModel.get(), GraphRef.Params.sampling);
 
   Env.NNContext[ContextId].setReady();
+  ContextId = getLittleEndian(ContextId);
   LOG_DEBUG(GraphRef.EnableDebugLog, "initExecCtx...Done"sv)
   return ErrNo::Success;
 }
@@ -3098,7 +3099,8 @@ Expect<ErrNo> getOutput(WasiNNEnvironment &Env, uint32_t ContextId,
 
   std::copy_n(CxtRef.LlamaOutputs.data(), CxtRef.LlamaOutputs.size(),
               OutBuffer.data());
-  BytesWritten = static_cast<uint32_t>(CxtRef.LlamaOutputs.size());
+  BytesWritten =
+      getLittleEndian(static_cast<uint32_t>(CxtRef.LlamaOutputs.size()));
   LOG_DEBUG(GraphRef.EnableDebugLog, "getOutput: with Index {}...Done"sv, Index)
   return ErrNo::Success;
 }
@@ -3196,7 +3198,7 @@ Expect<ErrNo> getOutputSingle(WasiNNEnvironment &Env, uint32_t ContextId,
   std::string LastToken = common_token_to_piece(
       GraphRef.LlamaContext.get(), CxtRef.LlamaOutputTokens.back());
   std::copy_n(LastToken.data(), LastToken.length(), OutBuffer.data());
-  BytesWritten = static_cast<uint32_t>(LastToken.length());
+  BytesWritten = getLittleEndian(static_cast<uint32_t>(LastToken.length()));
   LOG_DEBUG(GraphRef.EnableDebugLog, "getOutputSingle: with Index {}...Done"sv,
             Index)
   return ErrNo::Success;
