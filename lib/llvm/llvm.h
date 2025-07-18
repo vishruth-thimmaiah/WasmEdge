@@ -104,6 +104,9 @@ public:
   static inline unsigned int Trunc = 0;
   static inline unsigned int UAddSat = 0;
   static inline unsigned int USubSat = 0;
+#if !WASMEDGE_ENDIAN_LITTLE_BYTE
+  static inline unsigned int Bswap = 0;
+#endif
 #if defined(__x86_64__)
   static inline unsigned int X86SSE2PAvgB = 0;
   static inline unsigned int X86SSE2PAvgW = 0;
@@ -127,6 +130,9 @@ public:
   static inline unsigned int AArch64NeonTbl1 = 0;
   static inline unsigned int AArch64NeonUAddLP = 0;
   static inline unsigned int AArch64NeonURHAdd = 0;
+#endif
+#if defined(__s390x__)
+  static inline unsigned int S390VPerm = 0;
 #endif
 
   static inline unsigned int Cold = 0;
@@ -186,6 +192,9 @@ private:
     Trunc = getIntrinsicID("llvm.trunc"sv);
     UAddSat = getIntrinsicID("llvm.uadd.sat"sv);
     USubSat = getIntrinsicID("llvm.usub.sat"sv);
+#if !WASMEDGE_ENDIAN_LITTLE_BYTE
+    Bswap = getIntrinsicID("llvm.bswap"sv);
+#endif
 
 #if defined(__x86_64__)
     X86SSE2PAvgB = getIntrinsicID("llvm.x86.sse2.pavg.b"sv);
@@ -210,6 +219,9 @@ private:
     AArch64NeonTbl1 = getIntrinsicID("llvm.aarch64.neon.tbl1"sv);
     AArch64NeonUAddLP = getIntrinsicID("llvm.aarch64.neon.uaddlp"sv);
     AArch64NeonURHAdd = getIntrinsicID("llvm.aarch64.neon.urhadd"sv);
+#endif
+#if defined(__s390x__)
+    S390VPerm = getIntrinsicID("llvm.s390.vperm"sv);
 #endif
 
     Cold = getEnumAttributeKind("cold"sv);
