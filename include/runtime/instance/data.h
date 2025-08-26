@@ -45,8 +45,9 @@ public:
     // Load the data to the value.
     EndianValue<uint128_t> Value;
     std::memcpy(&Value.raw(), &Data[Offset], N);
-    if constexpr (Endian::native == Endian::big)
+    if constexpr (Endian::native == Endian::big) {
       Value.raw() >>= (128 - N * 8);
+    }
     return Value.le();
   }
 

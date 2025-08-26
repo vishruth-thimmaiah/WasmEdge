@@ -106,8 +106,9 @@ static void parseSIMDLanes(WasmEdge::uint128_t &V128,
     V[I] = static_cast<T>(std::stoull(std::string(X)));
     I++;
   }
-  if constexpr (Endian::native == Endian::big)
+  if constexpr (Endian::native == Endian::big) {
     std::reverse(V, V + 16 / N);
+  }
   std::memcpy(&V128, &V, 16);
 }
 

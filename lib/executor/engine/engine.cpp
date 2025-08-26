@@ -1781,7 +1781,7 @@ Expect<void> Executor::execute(Runtime::StackManager &StackMgr,
       uint8x16_t Index = Val2.get<uint8x16_t>();
       if constexpr (Endian::native == Endian::big) {
 #if defined(_MSC_VER) && !defined(__clang__)
-        std::for_each(Index.begin(), Index.end(), [](auto &i) { i = 15 - i; });
+        std::for_each(Index.begin(), Index.end(), [](auto &I) { I = 15 - I; });
 #else
         Index = 15 - Index;
 #endif

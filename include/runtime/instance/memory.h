@@ -18,12 +18,12 @@
 #include "common/errinfo.h"
 #include "common/int128.h"
 #include "common/spdlog.h"
+#include "common/types.h"
 #include "system/allocator.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <fmt/base.h>
 #include <fstream>
 #include <memory>
 #include <set>
@@ -334,7 +334,7 @@ public:
     }
     // Copy the stored data to the value.
     if (likely(Length > 0)) {
-      T StoreValue = EndianValue(Value).le();
+      T StoreValue = EndianValue<T>(Value).le();
       std::memcpy(&DataPtr[Offset], &StoreValue, Length);
     }
     return {};

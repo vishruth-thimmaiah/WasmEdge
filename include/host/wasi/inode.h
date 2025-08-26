@@ -814,7 +814,7 @@ private:
 
   DirHolder Dir;
 
-  EndianValue<__wasi_filetype_t> unsafeFiletype() const noexcept;
+  __wasi_filetype_t unsafeFiletype() const noexcept;
   WasiExpect<void> updateStat() const noexcept;
 
 #elif WASMEDGE_OS_WINDOWS

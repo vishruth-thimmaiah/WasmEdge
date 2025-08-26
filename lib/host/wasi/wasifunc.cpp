@@ -1573,7 +1573,7 @@ Expect<uint32_t> WasiPollOneoff<Trigger>::body(
       }
     }
     Poller.wait();
-    *NEvents = EndianValue(Poller.result()).le();
+    *NEvents = EndianValue<__wasi_size_t>(Poller.result()).le();
     Poller.reset();
     this->Env.releasePoller(std::move(Poller));
   }

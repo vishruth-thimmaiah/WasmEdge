@@ -236,7 +236,7 @@ WasiExpect<void> INode::fdFdstatGet(__wasi_fdstat_t &FdStat) const noexcept {
   if (int FdFlags = ::fcntl(Fd, F_GETFL); unlikely(FdFlags < 0)) {
     return WasiUnexpect(fromErrNo(errno));
   } else {
-    FdStat.fs_filetype = unsafeFiletype().le();
+    FdStat.fs_filetype = EndianValue(unsafeFiletype()).le();
 
     FdStat.fs_flags = static_cast<__wasi_fdflags_t>(0);
     if (Append) {
@@ -289,7 +289,7 @@ INode::fdFilestatGet(__wasi_filestat_t &Filestat) const noexcept {
   // environment from special fd such as stdin, stdout and stderr.
   Filestat.dev = isSpecialFd(Fd) ? 0 : EndianValue(Stat->st_dev).le();
   Filestat.ino = isSpecialFd(Fd) ? 0 : EndianValue(Stat->st_ino).le();
-  Filestat.filetype = unsafeFiletype().le();
+  Filestat.filetype = EndianValue(unsafeFiletype()).le();
   Filestat.nlink = isSpecialFd(Fd) ? 0 : EndianValue(Stat->st_nlink).le();
   Filestat.size = isSpecialFd(Fd) ? 0 : EndianValue(Stat->st_size).le();
   Filestat.atim = isSpecialFd(Fd) ? 0 : fromTimespec(Stat->st_atim).le();
@@ -460,7 +460,7 @@ WasiExpect<void> INode::fdPwrite(Span<Span<const uint8_t>> IOVs,
     if (::lseek(Fd, OldOffset, SEEK_SET) < 0) {
       return WasiUnexpect(fromErrNo(errno));
     }
-    NRead = EndianValue(static_cast<__wasi_size_t>(Res)).le();
+    NWritten = EndianValue(static_cast<__wasi_size_t>(Res)).le();
   }
 #endif
 
@@ -555,11 +555,10 @@ WasiExpect<void> INode::fdReaddir(Span<uint8_t> Buffer,
 WasiExpect<void> INode::fdSeek(__wasi_filedelta_t Offset,
                                __wasi_whence_t Whence,
                                __wasi_filesize_t &Size) const noexcept {
-  if (EndianValue<__off_t> Res = ::lseek(Fd, Offset, toWhence(Whence));
-      unlikely(Res.raw() < 0)) {
+  if (auto Res = ::lseek(Fd, Offset, toWhence(Whence)); unlikely(Res < 0)) {
     return WasiUnexpect(fromErrNo(errno));
   } else {
-    Size = static_cast<__wasi_filesize_t>(Res.le());
+    Size = EndianValue(static_cast<__wasi_filesize_t>(Res)).le();
   }
 
   return {};
@@ -574,11 +573,10 @@ WasiExpect<void> INode::fdSync() const noexcept {
 }
 
 WasiExpect<void> INode::fdTell(__wasi_filesize_t &Size) const noexcept {
-  if (EndianValue<__off_t> Res = ::lseek(Fd, 0, SEEK_CUR);
-      unlikely(Res.raw() < 0)) {
+  if (auto Res = ::lseek(Fd, 0, SEEK_CUR); unlikely(Res < 0)) {
     return WasiUnexpect(fromErrNo(errno));
   } else {
-    Size = static_cast<__wasi_filesize_t>(Res.le());
+    Size = EndianValue(static_cast<__wasi_filesize_t>(Res)).le();
   }
 
   return {};
@@ -1392,7 +1390,7 @@ INode::sockGetPeerAddr(__wasi_address_family_t *AddressFamilyPtr,
   }
 }
 
-EndianValue<__wasi_filetype_t> INode::unsafeFiletype() const noexcept {
+__wasi_filetype_t INode::unsafeFiletype() const noexcept {
   return fromFileType(static_cast<mode_t>(Stat->st_mode));
 }
 
@@ -1400,7 +1398,7 @@ WasiExpect<__wasi_filetype_t> INode::filetype() const noexcept {
   if (!Stat) {
     EXPECTED_TRY(updateStat());
   }
-  return unsafeFiletype().raw();
+  return unsafeFiletype();
 }
 
 bool INode::isDirectory() const noexcept {

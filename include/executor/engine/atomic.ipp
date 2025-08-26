@@ -134,8 +134,8 @@ TypeT<T> Executor::runAtomicStoreOp(Runtime::StackManager &StackMgr,
 }
 
 template <typename T, typename AtomicOp, typename BinaryOp>
-T runAtomicOp(std::atomic<T> *AtomicObj, T Value, AtomicOp Op,
-                BinaryOp BinOp) {
+T runAtomicOp(std::atomic<T> *AtomicObj, T Value, AtomicOp Op [[maybe_unused]],
+              BinaryOp BinOp [[maybe_unused]]) {
   if constexpr (Endian::native == Endian::little) {
     return Op(AtomicObj, Value);
   } else {
@@ -446,7 +446,7 @@ Executor::runAtomicCompareExchangeOp(Runtime::StackManager &StackMgr,
     return Unexpect(ErrCode::Value::MemoryOutOfBounds);
   }
   EndianValue<I> Replacement = static_cast<I>(RawReplacement.get<T>());
-  I Expected = EndianValue(static_cast<I>(RawExpected.get<T>())).le();
+  I Expected = EndianValue<I>(static_cast<I>(RawExpected.get<T>())).le();
 
   AtomicObj->compare_exchange_strong(Expected, Replacement.le());
   RawAddress.emplace<T>(static_cast<T>(Expected));

@@ -4044,9 +4044,10 @@ public:
         Ret = Builder.createAtomicRMW(BinOp, Ptr, switchEndian(Value),
                                       LLVMAtomicOrderingSequentiallyConsistent);
       }
-    } else
+    } else {
       Ret = Builder.createAtomicRMW(BinOp, Ptr, switchEndian(Value),
                                     LLVMAtomicOrderingSequentiallyConsistent);
+    }
     Ret = switchEndian(Ret);
 #if LLVM_VERSION_MAJOR >= 13
     Ret.setAlignment(1 << Alignment);
@@ -4620,8 +4621,9 @@ private:
                          LLVM::Type VectorTy) noexcept {
     auto Vector = stackPop();
     compileLoadOp(MemoryIndex, Offset, Alignment, LoadTy);
-    if constexpr (Endian::native == Endian::big)
+    if constexpr (Endian::native == Endian::big) {
       Index = VectorTy.getVectorSize() - 1 - Index;
+    }
     auto Value = Stack.back();
     Stack.back() = Builder.createBitCast(
         Builder.createInsertElement(Builder.createBitCast(Vector, VectorTy),
@@ -4657,8 +4659,9 @@ private:
                           unsigned Alignment, unsigned Index, LLVM::Type LoadTy,
                           LLVM::Type VectorTy) noexcept {
     auto Vector = Stack.back();
-    if constexpr (Endian::native == Endian::big)
+    if constexpr (Endian::native == Endian::big) {
       Index = VectorTy.getVectorSize() - Index - 1;
+    }
     Stack.back() = Builder.createExtractElement(
         Builder.createBitCast(Vector, VectorTy), LLContext.getInt64(Index));
     compileStoreOp(MemoryIndex, Offset, Alignment, LoadTy);
@@ -4676,8 +4679,9 @@ private:
   }
   void compileExtractLaneOp(LLVM::Type VectorTy, unsigned Index) noexcept {
     auto Vector = Builder.createBitCast(Stack.back(), VectorTy);
-    if constexpr (Endian::native == Endian::big)
+    if constexpr (Endian::native == Endian::big) {
       Index = VectorTy.getVectorSize() - Index - 1;
+    }
     Stack.back() =
         Builder.createExtractElement(Vector, LLContext.getInt64(Index));
   }
@@ -4693,8 +4697,9 @@ private:
   void compileReplaceLaneOp(LLVM::Type VectorTy, unsigned Index) noexcept {
     auto Value = Builder.createTrunc(stackPop(), VectorTy.getElementType());
     auto Vector = Stack.back();
-    if constexpr (Endian::native == Endian::big)
+    if constexpr (Endian::native == Endian::big) {
       Index = VectorTy.getVectorSize() - Index - 1;
+    }
     Stack.back() = Builder.createBitCast(
         Builder.createInsertElement(Builder.createBitCast(Vector, VectorTy),
                                     Value, LLContext.getInt64(Index)),
@@ -5083,8 +5088,9 @@ private:
     auto ExtTy = FromTy.getExtendedElementVectorType();
     const auto Count = FromTy.getVectorSize();
     std::vector<uint32_t> Mask(Count / 2);
-    if constexpr (Endian::native == Endian::big)
+    if constexpr (Endian::native == Endian::big) {
       Low = !Low;
+    }
     std::iota(Mask.begin(), Mask.end(), Low ? 0 : Count / 2);
     auto R = Builder.createBitCast(Stack.back(), FromTy);
     if (Signed) {
